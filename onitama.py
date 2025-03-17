@@ -15,25 +15,27 @@ class Carta:
         self.id = id
         # Cada carta tiene 4 posibles movimientos
         self.movimientos = [[dx_1, dy_1], [dx_2, dy_2], [dx_3, dy_3], [dx_4, dy_4]]
+        
 # Movimiento concreto en el juego
 class Movimiento:
     def _init_(self, id, posicion_ficha, posicion_carta, movimiento):
         self.id = id
-        self.posicion_ficha = posicion_ficha
-        self.posicion_carta = posicion_carta
-        self.movimiento = movimiento
+        self.posicion_ficha = posicion_ficha    # posicion donde vamos a poner la ficha
+        self.posicion_carta = posicion_carta    # posicion de la carta usada
+        self.movimiento = movimiento            # lista donde guardamos los movimientos
 
-#Optimizacion del algoritmo MiniMax implementando poda Alfa-Beta
+# Optimizacion del algoritmo MiniMax implementando poda Alfa-Beta
 def alfa_beta(nodo, profundidad, alfa, beta, jugadorMax):
-    #Caso base: evaluamos el nodo si alcazamos la profundidad cero o llegamos al final
+    # Caso base: evaluamos el nodo si alcazamos la profundidad cero o llegamos al final
     if ((profundidad == 0) or (esFinal(nodo))):
         return heuristica(nodo), None
 
+    # Caso jugador Max
     else:
         if jugadorMax:
             valor = float('-inf')
             for movimiento in posibles_movimientos(nodo, jugadorMax):
-                nuevoNodo = aplica(movimiento, nodo)
+                nuevoNodo = aplica(movimiento, nodo)    # aplicamos el movimiento al nodo
                 valNuevoNodo, sigMov = alfa_beta(nuevoNodo, profundidad, alfa, beta, False)
                 if valNuevoNodo > valor:
                     valor = valNuevoNodo
@@ -44,6 +46,7 @@ def alfa_beta(nodo, profundidad, alfa, beta, jugadorMax):
             
             return valor, mejorMovimiento
 
+        # Caso jugador Min
         else:
             valor = float('inf')
             for movimiento in posibles_movimientos(nodo, jugadorMax):
@@ -58,7 +61,7 @@ def alfa_beta(nodo, profundidad, alfa, beta, jugadorMax):
             
             return valor, mejorMovimiento
 
-            
+# Funcion minimax sin optimizar (sin poda)            
 def minimax(nodo, profundidad, jugadorMax):
     if ((profundidad == 0) or (esFinal(nodo))):
         return heuristica(nodo), None
@@ -95,12 +98,12 @@ def esFinal(nodo):
     maestro0_vivo = False
     
     # Cuenta cuantos chamanes quedan en el tablero
-    contador = 0
+    contador_maestros = 0
 
-    # Verifica si el chaman del primer jugador esta en su posicion
+    # Verifica si el chaman del primer jugador esta en su posicion, B de Black 
     if nodo.tablero[4][2] == 'B':
         maestro0_vivo = True
-    # Verficia si el chaman del otro jugador esta en su posicion
+    # Verficia si el chaman del otro jugador esta en su posicion, W de White 
     if nodo.tablero[0][2] == 'W':
         maestro1_vivo = True
       
@@ -108,9 +111,9 @@ def esFinal(nodo):
     for i in range(5):
         for j in range(5):
             if nodo.tablero[i][j] == 'W' or nodo.tablero[i][j] == 'B':
-                contador += 1
+                contador_maestros += 1
     
-    return (maestro0_vivo or maestro1_vivo or (contador < 2))
+    return (maestro0_vivo or maestro1_vivo or (contador_maestros < 2))
 
 # Comprueba si un posible movimiento es valido
 def esPosible(movimiento, ficha, nodo, jugador):
@@ -142,6 +145,9 @@ def esPosible(movimiento, ficha, nodo, jugador):
 def posibles_movimientos(nodo, jugadorMax):
     sig_movimientos = []
 
+    # Asignamos tanto para el turno del jugador 0 como del jugador 1
+    # quienes van a ser sus contrincantes. Si player_id es 0 entonces
+    # el contrincante va a ser b y B a quien deben de ganar.
     if player_id == 0:
         ficha = 'w'
         maestro = 'W'
@@ -217,6 +223,7 @@ def aplica(movimiento, nodo_viejo):
 
 # evalua el estado del juego
 def heuristica(nodo):
+
     if player_id == 0:
         ficha = 'w'
         maestro = 'W'
